@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Enum
 
 db = SQLAlchemy()
 
@@ -32,8 +33,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(255), nullable=False)
-    
+    status = db.Column(Enum("pending", "active", "finished", name="status_enum", default="pending"))
+
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=True)
