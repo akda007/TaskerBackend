@@ -19,7 +19,7 @@ def create_user():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({"message": "User created!"})
+    return jsonify({"msg": "User created!"})
 
 @bp.route('/login', methods=['POST'])
 def login():
