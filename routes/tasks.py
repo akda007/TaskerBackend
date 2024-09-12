@@ -75,9 +75,8 @@ def edit_task(task_id):
 
 
 
-bp.route("/tasks", method=["POST"])
+@bp.route("/tasks/<int:task_id>", methods=["DELETE"])
 @jwt_required()
-
 def remove_tasks(task_id):
     claims = get_jwt()
     user = claims["user_id"]
