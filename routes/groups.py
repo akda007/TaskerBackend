@@ -1,4 +1,3 @@
-from venv import create
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
@@ -89,6 +88,7 @@ def add_task_to_group():
 
     group_id = data.get("group_id")
     group = Group.query.get("group_id")
+
     if not group_id:
         return jsonify({"msg": "Group not found"}), 404
     
@@ -103,6 +103,28 @@ def add_task_to_group():
 
     return jsonify({"msg": "Task created", "task_id": new_task.id}), 201
 
+
+@bp.route("/groups/<int:group_id>/tasks", methods=["GET"])
+@jwt_required()
+def get_group_tasks(group_id):
+    claims = get_jwt()
+    user_id = claims["user_id"]
+
+    group = Group.query.get(group_id)
+
+    if not group:
+        return jsonify({"msg": "Group not found"}), 404
+
+    tasks = Task.query.filter_by(groups_id=group_id).all()
+
+    task_list = [{
+        "id": t.id,
+        "title": t.title,
+        "description": t.description,
+        "status": t.status
+    } for t in tasks]
+
+    return jsonify(task_list), 200
 
 
 @bp.route("/groups/<int:group_id>/tasks/<int:task_id>", methods=["POST"])
