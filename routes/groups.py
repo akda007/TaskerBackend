@@ -107,7 +107,7 @@ def add_task_to_group():
 
 @bp.route("/groups/<int:group_id>/tasks/<int:task_id>", methods=["POST"])
 @jwt_required()
-def edit_group_task(group_id, task_id):
+def edit_group_tasks(group_id, task_id):
     claims = get_jwt()
     user = claims["user_id"]
 
