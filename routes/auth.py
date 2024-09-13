@@ -15,6 +15,15 @@ def create_user():
     password = data.get('password')
     email = data.get('email')
 
+    if not username or username == "":
+        return jsonify({"msg": "Empty username field!"}), 400
+
+    if not email or email == "":
+        return jsonify({"msg": "Empty email field!"}), 400
+    
+    if not password or password == "":
+        return jsonify({"msg": "Empty password field!"}), 400
+
     hashed_password = bcrypt.hashpw(str.encode(password), bcrypt.gensalt())
     user = User(username=username, password=hashed_password, email=email)
 
@@ -71,12 +80,12 @@ def login():
     user = User.query.filter_by(username=username).first()
     
     if user is None:
-        return jsonify({"error": "User not found!"}), 401
+        return jsonify({"msg": "User not found!"}), 401
     
     if bcrypt.checkpw(str.encode(password), user.password):
         access_token = create_access_token(identity=username, additional_claims={"user_id": user.id, "user_email": user.email}, expires_delta=datetime.timedelta(hours=24))
         return jsonify(access_token=access_token), 200
-    return jsonify({"error": "Invalid credentials"}), 401
+    return jsonify({"msg": "Invalid credentials"}), 401
 
 
 @bp.route('/user-info', methods=['GET'])

@@ -30,12 +30,12 @@ def delete_groups(group_id):
     group = Group.query.get(group_id)
 
     if not group:
-        return jsonify({"message": "Group not found"}), 404
+        return jsonify({"msg": "Group not found"}), 404
 
     db.session.delete(group)
     db.session.commit()
 
-    return jsonify({"message": "Group deleted"}), 200
+    return jsonify({"msg": "Group deleted"}), 200
 
 
 @bp.route("/groups", methods=["POST"])
