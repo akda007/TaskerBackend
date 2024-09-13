@@ -17,9 +17,9 @@ def create_tasks():
     description = data.get("description")
     status = data.get("status")
 
-    newTask = Task(title=title, description=description, user_id=user_id, status=status)
+    new_task = Task(title=title, description=description, user_id=user_id, status=status)
 
-    db.session.add(newTask)
+    db.session.add(new_task)
     db.session.commit()
 
     return { "message": "Task created" }, 201
@@ -43,19 +43,17 @@ def get_tasks():
 
     return jsonify(task_list), 200
 
-@bp.route("/tasks", methods=["POST"])
+@bp.route("/tasks/<int:task_id>", methods=["PATCH"])
 @jwt_required()
 def edit_task(task_id):
-    claims = get_jwt
-
-    user = claims["user_id"]
-
     data = request.get_json()
+
     title = data.get("title")
     description = data.get("description")
     status = data.get("status")
 
     target_task = Task.query.get(task_id)
+
     if not target_task:
         return jsonify({"msg": "Task not found"}), 404
 
