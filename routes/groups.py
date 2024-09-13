@@ -24,6 +24,20 @@ def get_groups():
 
     return jsonify(group_list), 200
 
+@bp.route("/groups/<int:group_id>", methods=["DELETE"])
+@jwt_required()
+def delete_groups(group_id):
+    group = Group.query.get(group_id)
+
+    if not group:
+        return jsonify({"message": "Group not found"}), 404
+
+    db.session.delete(group)
+    db.session.commit()
+
+    return jsonify({"message": "Group deleted"}), 200
+
+
 @bp.route("/groups", methods=["POST"])
 @jwt_required()
 def create_group():
@@ -76,7 +90,7 @@ def add_user_to_group():
 
 @bp.route("/groups/<int:group_id>/tasks", methods = ["POST"])
 @jwt_required()
-def add_task_to_group():
+def add_task_to_group(group_id):
     claims = get_jwt()
     user_id = claims["user_id"]
 
@@ -86,8 +100,7 @@ def add_task_to_group():
     description = data.get("description")
     status = data.get("status")
 
-    group_id = data.get("group_id")
-    group = Group.query.get("group_id")
+    group = Group.query.get(group_id)
 
     if not group_id:
         return jsonify({"msg": "Group not found"}), 404
@@ -96,7 +109,7 @@ def add_task_to_group():
     if group not in user.groups:
         return jsonify({"msg": "Permission denied"}), 403
     
-    new_task = Task(title = title, description = description, user_id = user_id, status = status, groups_id = group_id)
+    new_task = Task(title = title, description = description, status = status, group_id = group_id)
 
     db.session.add(new_task)
     db.session.commit()
@@ -110,12 +123,17 @@ def get_group_tasks(group_id):
     claims = get_jwt()
     user_id = claims["user_id"]
 
+    status = request.args.get("status", None)
+
     group = Group.query.get(group_id)
 
     if not group:
         return jsonify({"msg": "Group not found"}), 404
 
-    tasks = Task.query.filter_by(groups_id=group_id).all()
+    if status:
+        tasks = Task.query.filter_by(group_id=group_id, status=status).all()
+    else:
+        tasks = Task.query.filter_by(group_id=group_id).all()
 
     task_list = [{
         "id": t.id,
@@ -163,30 +181,3 @@ def edit_group_tasks(group_id, task_id):
 
     return jsonify({"msg": "Task Updated", "task_id": target_task.id}), 200
 
-
-
-bp.route("/groups/<int:group_id>/tasks/<int:task_id>", method=["POST"])
-@jwt_required()
-
-def remove_group_tasks(group_id, task_id):
-    claims = get_jwt()
-    user = claims["user_id"]
-
-    target_task = Task.query.get(task_id)
-    if not Task:
-        return jsonify({"msg": "Task not found"}), 404
-    
-    group = Group.query.get(group_id)
-    if not group:
-        return jsonify({"msg": "Groups not found"}), 404
-    
-    if target_task.group != group:
-        return jsonify({"msg": "Taks does not belong to this group"}), 404
-    
-    if target_task.user_id != user:
-        return jsonify({"msg": "Unauthorized"}), 403
-    
-    db.session.delete(target_task)
-    db.session.commit()
-
-    return jsonify({"msg": "Task deleted"}), 200

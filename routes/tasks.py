@@ -30,9 +30,14 @@ def get_tasks():
     claims = get_jwt()
     user_id = claims["user_id"]
 
+    status = request.args.get("status", None)
+
     user = User.query.get(user_id)
 
-    tasks = Task.query.filter_by(user_id=user_id).all()
+    if status:
+        tasks = Task.query.filter_by(user_id=user_id, status=status).all()
+    else:
+        tasks = Task.query.filter_by(user_id=user_id).all()
 
     task_list = [{
         "id": t.id,
@@ -83,7 +88,7 @@ def remove_tasks(task_id):
     if not Task:
         return jsonify({"msg": "Task not found"}), 404
     
-    if task.user_id != user:
+    if task.user_id and task.user_id != user:
         return jsonify({"msg": "Unauthorized"}), 403
     
     db.session.delete(task)
